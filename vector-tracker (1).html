@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Upload Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e0dbd4;
+    --border2: #ccc8c0;
+    --text: #1a1916;
+    --text2: #6b6760;
+    --text3: #a09c97;
+    --accent: #1a1916;
+    --adobe: #e8170f;
+    --shut: #c0392b;
+    --free: #1565c0;
+    --dream: #2e7d32;
+    --vecteezy: #00b573;
+    --up-bg: #edf7ed;
+    --up-text: #1e5c20;
+    --pend-bg: #fff8e1;
+    --pend-text: #7c5800;
+    --none-bg: #f0ede8;
+    --none-text: #9e9991;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header .logo { font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: .08em; opacity: .5; }
+  header h1 { font-size: 17px; font-weight: 500; flex: 1; }
+  header .header-btns { display: flex; gap: 8px; }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-size: 28px; font-weight: 600; font-family: 'DM Mono', monospace; line-height: 1; }
+  .stat .l { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .stat.full .n { color: var(--dream); }
+  .stat.partial .n { color: #b06000; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .toolbar input, .toolbar select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+  .toolbar input { flex: 1; min-width: 160px; }
+  .toolbar input:focus, .toolbar select:focus { border-color: var(--border2); }
+  .toolbar select { min-width: 160px; }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn-dark { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn-dark:hover { background: #333; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-ghost { border-color: transparent; background: transparent; color: var(--text2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    font-family: 'DM Mono', monospace;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  .fname { font-weight: 500; font-size: 13px; font-family: 'DM Mono', monospace; }
+  .fnote { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'DM Sans', sans-serif; }
+  .fcat { font-size: 12px; color: var(--text2); }
+
+  .plat-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .plat-pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .02em;
+  }
+  .plat-pill.up { background: var(--up-bg); color: var(--up-text); }
+  .plat-pill.pend { background: var(--pend-bg); color: var(--pend-text); }
+  .plat-pill.review { background: #ede8f7; color: #5b3fa0; }
+  .plat-pill.none { background: var(--none-bg); color: var(--none-text); }
+
+  .prog-wrap { margin-top: 5px; display: flex; align-items: center; gap: 6px; }
+  .prog-bar { flex: 1; max-width: 80px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 2px; background: var(--dream); transition: width .3s; }
+  .prog-lbl { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  .actions { display: flex; gap: 4px; }
+
+  .empty { text-align: center; padding: 48px 24px; color: var(--text3); }
+  .empty svg { opacity: .3; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* Modal */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+  }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+  .fg { margin-bottom: 14px; }
+  .fg label { display: block; font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+  .fg input, .fg select, .fg textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+  .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--border2); background: #fff; }
+  .fg textarea { resize: vertical; min-height: 70px; }
+
+  .plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pcard {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .pcard:hover { border-color: var(--border2); }
+  .pcard.active { border-color: var(--text); background: var(--surface2); }
+  .pcard-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .pdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .pcard-name { font-size: 13px; font-weight: 500; }
+  .pcard select { font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 4px 8px; width: 100%; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); cursor: pointer; }
+  .pcard select:focus { outline: none; border-color: var(--border2); }
+
+  .mfoot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 680px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .plat-grid { grid-template-columns: 1fr; }
+    header { padding: 14px 16px; }
+    .main { padding: 16px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">VECTOR TRACKER</div>
+    <h1>Upload Stock Tracker</h1>
+  </div>
+  <div class="header-btns">
+    <button class="btn" onclick="openImport()" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)">⬆ Import</button>
+    <button class="btn" onclick="exportCSV()" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)">⬇ Export CSV</button>
+    <button class="btn btn-dark" onclick="openAdd()" style="background:#fff;color:#1a1916;border-color:#fff">+ Tambah File</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <input type="text" id="fQ" oninput="render()" placeholder="🔍  Cari nama file atau kategori...">
+    <select id="fPlat" onchange="render()">
+      <option value="">Semua platform</option>
+      <option value="adobe">Adobe Stock</option>
+      <option value="shut">Shutterstock</option>
+      <option value="free">Freepik</option>
+      <option value="dream">Dreamstime</option>
+      <option value="vecteezy">Vecteezy</option>
+    </select>
+    <select id="fStat" onchange="render()">
+      <option value="">Semua status</option>
+      <option value="uploaded">Uploaded</option>
+      <option value="pending">Pending</option>
+      <option value="review">In Review</option>
+      <option value="none">Belum diupload</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead><tr>
+        <th style="width:28%">Nama file</th>
+        <th style="width:13%">Kategori</th>
+        <th style="width:47%">Status Platform</th>
+        <th style="width:12%">Aksi</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      <p>Belum ada file. Klik <strong>+ Tambah File</strong> atau gunakan <strong>Import</strong> untuk batch.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="overlay" id="ovl" onclick="bgClose(event,'ovl')">
+  <div class="modal">
+    <h3 id="mtitle">Tambah file baru</h3>
+    <div class="fg">
+      <label>Nama file</label>
+      <input type="text" id="mName" placeholder="contoh: abstract-wave.ai">
+    </div>
+    <div class="fg">
+      <label>Kategori</label>
+      <input type="text" id="mCat" placeholder="contoh: Abstract, Nature, Business...">
+    </div>
+    <div class="fg">
+      <label>Status per platform</label>
+      <div class="plat-grid" id="pGrid"></div>
+    </div>
+    <div class="fg">
+      <label>Catatan</label>
+      <textarea id="mNote" placeholder="Link, versi, keterangan lainnya..."></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeOvl('ovl')">Batal</button>
+      <button class="btn btn-dark" onclick="save()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="overlay" id="iovl" onclick="bgClose(event,'iovl')">
+  <div class="modal">
+    <h3>Import file (batch)</h3>
+    <div class="fg">
+      <label>Daftar nama file — satu per baris</label>
+      <textarea id="iText" style="min-height:160px;font-family:'DM Mono',monospace;font-size:12px;" placeholder="abstract-wave-blue.ai&#10;mountain-landscape.eps&#10;business-icons.svg&#10;floral-pattern.ai"></textarea>
+    </div>
+    <div class="fg">
+      <label>Kategori default (opsional)</label>
+      <input type="text" id="iCat" placeholder="contoh: Abstract">
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeOvl('iovl')">Batal</button>
+      <button class="btn btn-dark" onclick="doImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PLATS = [
+  { id:'adobe', name:'Adobe Stock', color:'#e8170f' },
+  { id:'shut',  name:'Shutterstock', color:'#c0392b' },
+  { id:'free',  name:'Freepik', color:'#1565c0' },
+  { id:'dream',    name:'Dreamstime', color:'#2e7d32' },
+  { id:'vecteezy', name:'Vecteezy',   color:'#00b573' },
+];
+
+let files = [];
+try { files = JSON.parse(localStorage.getItem('vt2_files') || '[]'); } catch(e) {}
+let editId = null;
+
+function persist() {
+  try { localStorage.setItem('vt2_files', JSON.stringify(files)); } catch(e) {}
+}
+
+function ps(f, pid) { return (f.platforms && f.platforms[pid]) || 'none'; }
+
+function platPill(pid, status) {
+  const p = PLATS.find(x=>x.id===pid);
+  const short = {adobe:'Adobe',shut:'Shutterstock',free:'Freepik',dream:'Dreamstime',vecteezy:'Vecteezy'}[pid];
+  return `<span class="plat-pill ${status}" title="${p.name}: ${status==='uploaded'?'Uploaded':status==='pending'?'Pending':status==='review'?'In Review':'Belum diupload'}">${short}</span>`;
+}
+
+function render() {
+  const fp = document.getElementById('fPlat').value;
+  const fs = document.getElementById('fStat').value;
+  const fq = document.getElementById('fQ').value.toLowerCase();
+
+  const list = files.filter(f => {
+    const mq = !fq || f.name.toLowerCase().includes(fq) || (f.cat||'').toLowerCase().includes(fq);
+    if (!mq) return false;
+    if (fp && fs) return ps(f, fp) === fs;
+    if (fp) return true;
+    if (fs) return PLATS.some(p => ps(f, p.id) === fs);
+    return true;
+  });
+
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty');
+
+  if (list.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = list.map(f => {
+      const upCount = PLATS.filter(p => ps(f,p.id)==='uploaded').length;
+      const pct = Math.round(upCount / PLATS.length * 100);
+      const pills = PLATS.map(p => platPill(p.id, ps(f,p.id))).join('');
+      return `<tr>
+        <td>
+          <div class="fname">${esc(f.name)}</div>
+          ${f.note ? `<div class="fnote">${esc(f.note)}</div>` : ''}
+        </td>
+        <td><span class="fcat">${esc(f.cat||'—')}</span></td>
+        <td>
+          <div class="plat-row">${pills}</div>
+          <div class="prog-wrap">
+            <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${pct===100?'#2e7d32':pct>0?'#b06000':'#ccc'}"></div></div>
+            <span class="prog-lbl">${upCount}/${PLATS.length}</span>
+          </div>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" onclick="openEdit('${f.id}')" title="Edit">✏️</button>
+            <button class="btn btn-sm btn-ghost" onclick="del('${f.id}')" title="Hapus" style="color:#c0392b">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  renderStats();
+}
+
+function renderStats() {
+  const total = files.length;
+  const full = files.filter(f => PLATS.every(p => ps(f,p.id)==='uploaded')).length;
+  const partial = files.filter(f => PLATS.some(p=>ps(f,p.id)==='uploaded') && !PLATS.every(p=>ps(f,p.id)==='uploaded')).length;
+  const notYet = files.filter(f => PLATS.every(p => ps(f,p.id)==='none')).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="n">${total}</div><div class="l">Total file</div></div>
+    <div class="stat full"><div class="n">${full}</div><div class="l">Semua platform</div></div>
+    <div class="stat partial"><div class="n">${partial}</div><div class="l">Sebagian platform</div></div>
+    <div class="stat"><div class="n" style="color:var(--text2)">${notYet}</div><div class="l">Belum diupload</div></div>
+  `;
+}
+
+function buildPGrid(f) {
+  document.getElementById('pGrid').innerHTML = PLATS.map(p => {
+    const cur = f ? ps(f, p.id) : 'none';
+    return `<div class="pcard ${cur!=='none'?'active':''}" id="pc_${p.id}" onclick="cycleStatus('${p.id}')">
+      <div class="pcard-top">
+        <div class="pdot" style="background:${p.color}"></div>
+        <div class="pcard-name">${p.name}</div>
+      </div>
+      <select id="ps_${p.id}" onclick="event.stopPropagation()" onchange="syncPCard('${p.id}')">
+        <option value="none" ${cur==='none'?'selected':''}>Belum diupload</option>
+        <option value="pending" ${cur==='pending'?'selected':''}>Pending</option>
+        <option value="review" ${cur==='review'?'selected':''}>In Review</option>
+        <option value="uploaded" ${cur==='uploaded'?'selected':''}>Uploaded ✓</option>
+      </select>
+    </div>`;
+  }).join('');
+}
+
+function cycleStatus(pid) {
+  const sel = document.getElementById('ps_'+pid);
+  const opts = ['none','pending','review','uploaded'];
+  sel.value = opts[(opts.indexOf(sel.value)+1)%3];
+  syncPCard(pid);
+}
+
+function syncPCard(pid) {
+  const sel = document.getElementById('ps_'+pid);
+  document.getElementById('pc_'+pid).className = 'pcard' + (sel.value!=='none'?' active':'');
+}
+
+function openAdd() {
+  editId = null;
+  document.getElementById('mtitle').textContent = 'Tambah file baru';
+  document.getElementById('mName').value = '';
+  document.getElementById('mCat').value = '';
+  document.getElementById('mNote').value = '';
+  buildPGrid(null);
+  document.getElementById('ovl').classList.add('open');
+  setTimeout(()=>document.getElementById('mName').focus(), 100);
+}
+
+function openEdit(id) {
+  editId = id;
+  const f = files.find(x=>x.id===id);
+  document.getElementById('mtitle').textContent = 'Edit file';
+  document.getElementById('mName').value = f.name;
+  document.getElementById('mCat').value = f.cat||'';
+  document.getElementById('mNote').value = f.note||'';
+  buildPGrid(f);
+  document.getElementById('ovl').classList.add('open');
+}
+
+function closeOvl(id) { document.getElementById(id).classList.remove('open'); }
+function bgClose(e, id) { if(e.target.id===id) closeOvl(id); }
+
+function save() {
+  const name = document.getElementById('mName').value.trim();
+  if (!name) { document.getElementById('mName').focus(); return; }
+  const platforms = {};
+  PLATS.forEach(p => { platforms[p.id] = document.getElementById('ps_'+p.id).value; });
+  const entry = {
+    id: editId || Date.now().toString(),
+    name,
+    cat: document.getElementById('mCat').value.trim(),
+    note: document.getElementById('mNote').value.trim(),
+    platforms,
+  };
+  if (editId) { const i = files.findIndex(f=>f.id===editId); files[i]=entry; }
+  else files.unshift(entry);
+  persist(); closeOvl('ovl'); render();
+  showToast(editId ? 'File diperbarui' : 'File ditambahkan');
+}
+
+function del(id) {
+  if (!confirm('Hapus file ini?')) return;
+  files = files.filter(f=>f.id!==id);
+  persist(); render();
+  showToast('File dihapus');
+}
+
+function openImport() {
+  document.getElementById('iText').value = '';
+  document.getElementById('iCat').value = '';
+  document.getElementById('iovl').classList.add('open');
+  setTimeout(()=>document.getElementById('iText').focus(), 100);
+}
+
+function doImport() {
+  const lines = document.getElementById('iText').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  const cat = document.getElementById('iCat').value.trim();
+  let added = 0;
+  lines.forEach(name => {
+    if (!files.find(f=>f.name===name)) {
+      files.unshift({ id: Date.now().toString()+Math.random().toString(36).slice(2), name, cat, note:'', platforms:{adobe:'none',shut:'none',free:'none',dream:'none',vecteezy:'none'} });
+      added++;
+    }
+  });
+  persist(); closeOvl('iovl'); render();
+  showToast(`${added} file diimport`);
+}
+
+function exportCSV() {
+  const header = ['Nama File','Kategori','Adobe Stock','Shutterstock','Freepik','Dreamstime','Vecteezy','Catatan'];
+  const rows = files.map(f => [
+    f.name, f.cat||'',
+    ps(f,'adobe'), ps(f,'shut'), ps(f,'free'), ps(f,'dream'), ps(f,'vecteezy'),
+    f.note||''
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [header.join(','), ...rows].join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vector-tracker-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  showToast('CSV berhasil diexport');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeOvl('ovl'); closeOvl('iovl'); }
+});
+
+render();
+</script>
+</body>
+</html>
